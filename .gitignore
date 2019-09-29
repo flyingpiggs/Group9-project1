@@ -3,3 +3,5 @@
 *.txt~
 *.un~
 *.bench~
+*.bench
+*.txt
