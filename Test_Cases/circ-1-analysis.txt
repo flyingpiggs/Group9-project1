@@ -1,0 +1,155 @@
+Circ-1 
+
+was given as the example ciruit with limited t.v here is a list of all possible t.v
+and there expected out-puts for testing: 
+t-v and fault combination based on handout recieved in class *non-reduced-fault-list!*
+
+
+T.V's---------------- OUTPUTS *detecetable vectors*
+000 -   -   -   -   -   c-SA-1
+                        g-SA-1
+                        h-SA-1
+                        h-IN-C-SA-1
+                        k-SA-1
+                        k-IN-G-SA-1
+                        k-IN-H-SA-1
+
+001 -   -   -   -   -   b-SA-1
+                        C-SA-0
+                        f-SA-0
+                        f-IN-B-SA-1
+                        h-SA-0
+                        h-IN-f-SA-0
+                        h-IN-C-SA-0
+                        k-SA-0
+                        k-IN-h-SA-0
+
+010 -   -   -   -   -   a-SA-1
+                        g-SA-1
+                        g-IN-A-SA-1
+                        h-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+011 -   -   -   -   -   a-SA-1
+                        b-SA-0
+                        f-SA-1
+                        f-IN-B-SA-0
+                        g-SA-1
+                        g-IN-A-SA-1
+                        h-SA-1
+                        h-IN-f-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+100 -   -   -   -   -   B-SA-1
+                        C-SA-1
+                        g-SA-1
+                        g-IN-B-SA-1
+                        h-SA-1
+                        h-IN-C-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+101 -   -   -   -   -   c-SA-0
+                        f-SA-0
+                        f-IN-B-SA-1
+                        h-SA-0
+                        h-IN-f-SA-0
+                        k-SA-0
+                        k-IN-h-SA-0
+
+110 -   -   -   -   -   A-SA-0
+                        B-SA-0
+                        g-SA-0
+                        g-IN-A-SA-0
+                        g-IN-B-SA-0
+                        k-SA-0
+                        k-IN-g-SA-0
+
+111 -   -   -   -   -   A-SA-0
+                        g-SA-0
+                        g-IN-A-SA-0
+                        g-IN-B-SA-0
+                        k-SA-0
+                        k-IN-g-SA-0Circ-1 
+
+was given as the example ciruit with limited t.v here is a list of all possible t.v
+and there expected out-puts for testing: 
+t-v and fault combination based on handout recieved in class *non-reduced-fault-list!*
+
+
+T.V's---------------- OUTPUTS *detecetable vectors*
+000 -   -   -   -   -   c-SA-1
+                        g-SA-1
+                        h-SA-1
+                        h-IN-C-SA-1
+                        k-SA-1
+                        k-IN-G-SA-1
+                        k-IN-H-SA-1
+
+001 -   -   -   -   -   b-SA-1
+                        C-SA-0
+                        f-SA-0
+                        f-IN-B-SA-1
+                        h-SA-0
+                        h-IN-f-SA-0
+                        h-IN-C-SA-0
+                        k-SA-0
+                        k-IN-h-SA-0
+
+010 -   -   -   -   -   a-SA-1
+                        g-SA-1
+                        g-IN-A-SA-1
+                        h-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+011 -   -   -   -   -   a-SA-1
+                        b-SA-0
+                        f-SA-1
+                        f-IN-B-SA-0
+                        g-SA-1
+                        g-IN-A-SA-1
+                        h-SA-1
+                        h-IN-f-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+100 -   -   -   -   -   B-SA-1
+                        C-SA-1
+                        g-SA-1
+                        g-IN-B-SA-1
+                        h-SA-1
+                        h-IN-C-SA-1
+                        k-SA-1
+                        k-IN-g-SA-1
+                        k-IN-h-SA-1
+
+101 -   -   -   -   -   c-SA-0
+                        f-SA-0
+                        f-IN-B-SA-1
+                        h-SA-0
+                        h-IN-f-SA-0
+                        k-SA-0
+                        k-IN-h-SA-0
+
+110 -   -   -   -   -   A-SA-0
+                        B-SA-0
+                        g-SA-0
+                        g-IN-A-SA-0
+                        g-IN-B-SA-0
+                        k-SA-0
+                        k-IN-g-SA-0
+
+111 -   -   -   -   -   A-SA-0
+                        g-SA-0
+                        g-IN-A-SA-0
+                        g-IN-B-SA-0
+                        k-SA-0
+                        k-IN-g-SA-0
