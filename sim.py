@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os
+import os, copy
 
 # Using these naming conventions: https://visualgit.readthedocs.io/en/latest/pages/naming_convention.html
 # I won't retroactively apply them to the provided code though. 
@@ -11,12 +11,6 @@ import os
 # 4. read_faults: A function that reads information about the faults and generates a list that will be used to override the good circuit operations. 
 # 5. basic_sim: the actual simulation
 # 6. main: The main function
-
-# Class declaration for the faults, Please refer to the comments of read_faults() for more information.
-class fault: 
-    def __init__( self, _wire, _value ): 
-        self.wire = _wire
-        self.value = _value 
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Neatly prints the Circuit Dictionary:
@@ -306,27 +300,73 @@ def gateCalc(circuit, node):
 
 # Author: Peter
 # Function purpose:
-#	Note: When I say list in this case, I'm referring to the programming data structure, not the colloquial use of list.
-#		Also, dictionary is referring to the python dictionary, not a dictionary we look up words in. 
-#	This function is meant to read in information about the faults, then produce a list that will have the necessary information
-#	we need during the circuit simulation to override the good circuit. 
-#	Each member of this list will have these data members:
-#	fault.wire = a string should correspond to the key for each circuit node in the circuit dictionary that is used in the 
-#		circuit simulation code.
-#	fault.value = whatever value this fault will be stuck at. 
-#	The class declaration will be at the top of this file. 
+#	Note: Dictionary is referring to the python dictionary, not a dictionary we look up words in. Also, list will refer
+#		to the programming list since python doesn't technically have arrays. 
+
+#	This function is meant to read in information about the faults, then produce a dictionary that will have the necessary 
+#	information we need during the circuit simulation to override the good circuit. The keys into this dictionary should 
+#	correspond to the wire that is used to identify nodes in the circuit simulation.
+
+#	Each member of this dictionary will be its own dictionary with the following key/value pairings:
+#	value : whatever value this fault will be stuck at, will be '0' or '1'
+#	terminals : refers to the input wire of a logic gate, will be a string of some sort
+#	Note: The wires in the given code follow the format "wire_NAME" where NAME is whatever it was in the benchmark file
 
 # Parameters: 
-# 1.  faultsInfo
+# 1.  faultInfo
 #	A text file that lists the faults that will be present in the circuit simulation
-#	Note: There's an assumption that the faults in this list will be present in the associated benchmark file
-#	i.e. I'm not going to bother doing any input sanitation.  
 
-# Returns: faults, a list of the faults 
+#	Note: There's an assumption that the faults in this list will be actual wires in the associated benchmark file
+#	i.e. I'm not going to bother doing any input sanitation, nor should there be comments or anything like that in the fault file.
+#	Also, I'm hoping that no one decides to name any of the inputs, outputs, or logic gates as SA-0 SA-1 because this code would 
+#	bug, but let's see what happens...
+#	Lastly, the expected format for faults in this text file will be something similar to as follows:
+#		If just a wire is faulty, then it should be something like "A-SA-0"
+#		If the input to a gate is fault, then if the output wire is called K and input wire is called g, 
+#		then the fault should appear as "K-IN-g-SA-0"
 
+# Returns: faults, a dictionary of the faults 
 
-def read_faults( faultList ):
-    
+def read_faults( faultInfo ):
+
+    faults = {} 
+    for info in faultInfo:
+        splitString = info.split("-")
+        wire = "wire_" + splitString[0]
+
+        if ( wire in faults ):
+            if ( "wire_" + splitString[2] in faults[wire]["terminals"] ):
+                print( "There's was a conflict during fault assignment of input wires for a gate, ending read_faults()..." )
+                return -1
+            elif ( faults[wire]["terminals"] == None ):
+                print( "There's was a conflict during fault assignment of a line, ending read_faults()..." )
+                return -2
+            if ( "SA-0" in info):
+                faults[wire]["value"].append( "0" )
+            elif( "SA-1" in info ):
+                faults[wire]["value"].append( "1" )
+            faults[wire]["terminals"].append( "wire_" + splitString[2] )
+            continue
+        
+        fault = {}
+        if ( "IN" in info ):
+#	These values need to be lists in this case to deal with different input wires to the same logic gate
+            if ( "SA-0" in info ):
+                fault["value"] = [ "0" ]
+            elif( "SA-1" in info ):
+                fault["value"] = [ "1" ] 
+            fault["terminals"] = [ "wire_" + splitString[2] ] 
+#	The 2 is due to the expected format of a fault when it's the input wire to a logic gate
+        else:
+            fault["terminals"] = None
+            if ( "SA-0" in info ):
+                fault["value"] = [ "0" ]
+            elif( "SA-1" in info ):
+                fault["value"] = [ "1" ]
+#	value in this case doesn't really have to be a list since we shouldn't have duplicates, but I wanted to be consistent
+        fault[wire] = fault
+#	End of the loop
+     	
     return faults 
 
 # -------------------------------------------------------------------------------------------------------------------- #
