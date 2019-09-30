@@ -157,7 +157,7 @@ def netRead(netName):
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: calculates the output value for each logic gate
 # if faults == None, then we're running the non-faulty circuit
-def gateCalc(circuit, node, faults):
+def gateCalc(circuit, node, fault):
     
     # terminal will contain all the input wires of this logic gate (node)
     terminals = list(circuit[node][1])  
@@ -321,10 +321,11 @@ def gateCalc(circuit, node, faults):
 #	information we need during the circuit simulation to override the good circuit. The keys into this dictionary should 
 #	correspond to the wire that is used to identify nodes in the circuit simulation.
 
-#	Each member of this dictionary will be its own dictionary with the following key/value pairings:
+#	Each member of this list will be its own dictionary with the following key/value pairings:
 #	value : whatever value this fault will be stuck at, will be '0' or '1'
-#	terminals : refers to the input wire of a logic gate, will be a string of some sort
+#	terminal : refers to the input wire of a logic gate, will be a string of some sort
 #	Note: The wires in the given code follow the format "wire_NAME" where NAME is whatever it was in the benchmark file
+#	wire: This is used to access the specific node in the circuit that we're interested in 
 
 # Parameters: 
 # 1.  faultInfo
@@ -332,53 +333,29 @@ def gateCalc(circuit, node, faults):
 
 #	Note: There's an assumption that the faults in this list will be actual wires in the associated benchmark file
 #	i.e. I'm not going to bother doing any input sanitation, nor should there be comments or anything like that in the fault file.
-#	Also, I'm hoping that no one decides to name any of the inputs, outputs, or logic gates as SA-0 SA-1 because this code would 
-#	bug, but let's see what happens...
 #	Lastly, the expected format for faults in this text file will be something similar to as follows:
 #		If just a wire is faulty, then it should be something like "A-SA-0"
 #		If the input to a gate is fault, then if the output wire is called K and input wire is called g, 
 #		then the fault should appear as "K-IN-g-SA-0"
 
-# Returns: faults, a dictionary of the faults 
+# Returns: faults, a list of faults 
 
 def read_faults( faultInfo ):
 
-    faults = {} 
+    faults = [] 
     for info in faultInfo:
         splitString = info.split("-")
-        wire = "wire_" + splitString[0]
-
-        if ( wire in faults ):
-            if ( "wire_" + splitString[2] in faults[wire]["terminals"] ):
-                print( "There's was a conflict during fault assignment of input wires for a gate, ending read_faults()..." )
-                return -1
-            elif ( faults[wire]["terminals"] == None ):
-                print( "There's was a conflict during fault assignment of a line, ending read_faults()..." )
-                return -2
-            if ( "SA-0" in info):
-                faults[wire]["value"].append( "0" )
-            elif( "SA-1" in info ):
-                faults[wire]["value"].append( "1" )
-            faults[wire]["terminals"].append( "wire_" + splitString[2] )
-            continue
+	value = splitString[ len( splitString ) - 1 ]
         
         fault = {}
-        if ( "IN" in info ):
-#	These values need to be lists in this case to deal with different input wires to the same logic gate
-            if ( "SA-0" in info ):
-                fault["value"] = [ "0" ]
-            elif( "SA-1" in info ):
-                fault["value"] = [ "1" ] 
-            fault["terminals"] = [ "wire_" + splitString[2] ] 
+        if ( "-IN-" in info ):
+            fault["terminal"] = "wire_" + splitString[2] 
 #	The 2 is due to the expected format of a fault when it's the input wire to a logic gate
         else:
-            fault["terminals"] = None
-            if ( "SA-0" in info ):
-                fault["value"] = [ "0" ]
-            elif( "SA-1" in info ):
-                fault["value"] = [ "1" ]
-#	value in this case doesn't really have to be a list since we shouldn't have duplicates, but I wanted to be consistent
-        fault[wire] = fault
+            fault["terminal"] = None
+        fault[ "value" ] = value
+        fault[ "wire" ] = "wire_"+splitString[0]      
+        fault.append = fault
 #	End of the loop
      	
     return faults 
@@ -412,14 +389,18 @@ def inputRead(circuit, line):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: the actual simulation #
-def basic_sim( circuit, faults ):
+def basic_sim( circuit, fault ):
     # QUEUE and DEQUEUE
     # Creating a queue, using a list, containing all of the gates in the circuit
     queue = list(circuit["GATES"][1])
     i = 1
+    faultName = fault[ "wire" ]
+    if ( fault[ "terminal" ] ):
+        faultName = faultName + "-IN-" + fault[ "terminal" ]
+    faultName = faultName + "-SA-" + fault[ "value" ]  
 
-    if ( faults != None ):
-        print( "\nRunning the faulty circuit..." )
+    if ( fault != None ):
+        print( "\nRunning the faulty circuit with " + faultName )
 
     while True:
         i -= 1
@@ -442,7 +423,7 @@ def basic_sim( circuit, faults ):
 
         if term_has_value:
             circuit[curr][2] = True
-            circuit = gateCalc( circuit, curr, faults )
+            circuit = gateCalc( circuit, curr, fault )
 
             # ERROR Detection if LOGIC does not exist
             if isinstance(circuit, str):
@@ -607,7 +588,6 @@ def main():
 
 
         circuit = basic_sim( circuit, None )
-        faultCircuit = basic_sim( faultyCircuit, faults )
         print("\n *** Finished simulation - resulting circuit: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
@@ -620,12 +600,40 @@ def main():
                 faultyOutput = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                 break
             output = str(circuit[y][3]) + output
-            faultyOutput = str(circuit[y][3]) + faultyOutput
 
         print("\n *** Summary of simulation: ")
         print(line + " -> " + output + " written into output file. \n")
         outputFile.write( " -> " + output + "\n" )
-        faultyOutputFile.write( " -> " + faultyOutput + "\n" )
+
+        detectedFaults = {}
+
+        for fault in faults:
+            faultName = fault[ "wire" ]
+
+            if ( fault[ "terminal" ] ):
+                faultName = faultName + "-IN-" + fault[ "terminal" ]
+            faultName = faultName + "-SA-" + fault[ "value" ]
+
+            faultyCircuit = basic_sim( circuit, fault )
+
+            for y in circuit["OUTPUTS"][1]:
+                if not circuit[y][2]:
+                    faultyOutput = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
+                    break
+                faultyOutput = str(circuit[y][3]) + faultyOutput
+            #end of nested^2 for loop
+
+            faultyOutputFile.write( line + " -> " + faultyOutput + "\n" )
+            print(line + " -> " + faultyOutput + " written into faulty output file. \n")
+            if ( faultyOutput != output ):
+                faultyOutputFile.write( faultName + " detected!" )
+                detectedFaults[ faultName ] = True
+            for key in circuit:
+                if (key[0:5]=="wire_"):
+                    faultyCircuit[key][2] = False
+                    faultyCircuit[key][3] = 'U'
+            #end of nested^2 for loop
+        #end of nested for loop   
 
         # After each input line is finished, reset the circuit
         print("\n *** Now resetting circuit back to unknowns... \n")
@@ -634,8 +642,6 @@ def main():
             if (key[0:5]=="wire_"):
                 circuit[key][2] = False
                 circuit[key][3] = 'U'
-                faultyCircuit[key][2] = False
-                faultyCircuit[key][3] = 'U'
 
         print("\n circuit after resetting: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
