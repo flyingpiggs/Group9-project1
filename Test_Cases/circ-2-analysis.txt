@@ -1,0 +1,57 @@
+circ 2 
+
+        ______
+A------|      |   D           ______      
+       | AND  |--------- ----|      |   E
+B------|______|           ___|  OR  |-----
+                         |   |______|
+C------------------------|
+
+Analysis:
+
+input T.V               output *dectected faults*
+
+000 -   -   -   -   -   C-SA-1
+                        D-SA-1
+                        E-SA-1
+                        E-IN-D-SA-1
+                        E-IN-C-SA-1
+ 
+001 -   -   -   -   -   C-SA-0
+                        E-IN-C-SA-0
+                        E-SA-0
+                        
+
+010 -   -   -   -   -   A-SA-1
+                        D-SA-1
+                        D-IN-A-SA-1
+                        C-SA-1
+                        E-SA-0
+                        E-IN-C-SA-1
+                        E-IN-D-SA-1
+
+011 -   -   -   -   -   C-SA-0
+                        E-SA-0
+                        E-IN-C-SA-0
+
+100 -   -   -   -   -   B-SA-1
+                        C-SA-1
+                        D-SA-1
+                        D-IN-B-SA-1
+                        E-SA-1
+                        E-IN-D-SA-1
+
+101 -   -   -   -   -   C-SA-0
+                        E-SA-0
+                        E-IN-C-SA-0
+
+110 -   -   -   -   -   A-SA-0
+                        B-SA-0
+                        D-SA-0
+                        D-IN-A-SA-0
+                        D-IN-B-SA-0
+                        E-SA-0
+                        E-IN-D-SA-0
+
+111 -   -   -   -   -   E-SA-0 
+
