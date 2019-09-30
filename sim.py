@@ -156,7 +156,7 @@ def netRead(netName):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: calculates the output value for each logic gate
-def gateCalc(circuit, node):
+def gateCalc(circuit, node, faults):
     
     # terminal will contain all the input wires of this logic gate (node)
     terminals = list(circuit[node][1])  
@@ -172,6 +172,21 @@ def gateCalc(circuit, node):
         else:  # Should not be able to come here
             return -1
         return circuit
+
+# Comment blocks for tomorrow regarding how to use the new dictionary I created
+
+# First of all, does python have the same feature as Javascript where if I don't have an input for some variable,
+# it's just set as None? I need to double check this, and if not, I need to make sure I change the function calls where needed
+# I also need to make sure that I'm making a deep copy of circuit so that I have a faulty circuit simulation and a good circuit simulation
+
+# I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
+# to access the correct index of ["value"] to block the signal from the good circuit and replace it with the fault.
+# I need to make sure I save the signal from the good circuit though because I won't know whether or not there are fan-outs
+# within the scope of this code so I have to save the value so that I can restore it after the faulty output is calculated.
+
+# Things are easier when the fault is at an output wire since I know that the index for ["value"] must be 0
+# and I can just overwrite the value without having to worry about fan-outs since it'll be handled by whatever I do 
+# to deal with the issue mentioned in the previous comment block.
 
     # If the node is an AND gate output, solve and return the output
     elif circuit[node][0] == "AND":
