@@ -345,8 +345,7 @@ def read_faults( faultInfo ):
     faults = [] 
     for info in faultInfo:
         splitString = info.split("-")
-	value = splitString[ len( splitString ) - 1 ]
-        
+        value = splitString[ len( splitString ) - 1 ]
         fault = {}
         if ( "-IN-" in info ):
             fault["terminal"] = "wire_" + splitString[2] 
@@ -533,12 +532,12 @@ def main():
     inputFile = open(inputName, "r")
     outputFile = open(outputName, "w")
     faultyOutputFile = open( "faulty_" + outputName, "w" )
+    detectedFaults = {}
 
     # Runs the simulator for each line of the input file
     for line in inputFile:
         # Initializing output variable each input line
         output = ""
-        faultyOutput = ""
 
         # Do nothing else if empty lines, ...
         if (line == "\n"):
@@ -588,7 +587,7 @@ def main():
 
 
         circuit = basic_sim( circuit, None )
-        print("\n *** Finished simulation - resulting circuit: \n")
+        print("\n *** Finished simulation of good circuit - resulting circuit: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
         print(circuit)
@@ -601,13 +600,13 @@ def main():
                 break
             output = str(circuit[y][3]) + output
 
-        print("\n *** Summary of simulation: ")
+        print("\n *** Summary of simulation of good circuit: ")
         print(line + " -> " + output + " written into output file. \n")
         outputFile.write( " -> " + output + "\n" )
 
-        detectedFaults = {}
-
+        print( "\nNow doing simulation of circuits with faults...\n" )
         for fault in faults:
+            faultyOutput = ""
             faultName = fault[ "wire" ]
 
             if ( fault[ "terminal" ] ):
@@ -615,7 +614,6 @@ def main():
             faultName = faultName + "-SA-" + fault[ "value" ]
 
             faultyCircuit = basic_sim( circuit, fault )
-
             for y in circuit["OUTPUTS"][1]:
                 if not circuit[y][2]:
                     faultyOutput = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
@@ -649,7 +647,11 @@ def main():
         print(circuit)
 
         print("\n*******************\n")
-        
+    
+    faultCoverage = len( detectedFaults) / len( faults )
+    print( "Number of detected faults: " + len( detectedFaults ) )
+    print( "Number of faults in the fault list file: " + len( faults ) )
+    print( "Fault coverage: %.2f" % faultCoverage ) 
     outputFile.close
     faultyOutputFile.close
     #exit()
