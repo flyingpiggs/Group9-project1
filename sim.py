@@ -174,12 +174,6 @@ def gateCalc(circuit, node, faults):
             return -1
         return circuit
 
-# Comment blocks for tomorrow regarding how to use the new dictionary I created
-
-# First of all, does python have the same feature as Javascript where if I don't have an input for some variable,
-# it's just set as None? I need to double check this, and if not, I need to make sure I change the function calls where needed
-# I also need to make sure that I'm making a deep copy of circuit so that I have a faulty circuit simulation and a good circuit simulation
-
 # I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
 # to access the correct index of ["value"] to block the signal from the good circuit and replace it with the fault.
 # I need to make sure I save the signal from the good circuit though because I won't know whether or not there are fan-outs
@@ -188,6 +182,8 @@ def gateCalc(circuit, node, faults):
 # Things are easier when the fault is at an output wire since I know that the index for ["value"] must be 0
 # and I can just overwrite the value without having to worry about fan-outs since it'll be handled by whatever I do 
 # to deal with the issue mentioned in the previous comment block.
+
+# I should probably start a for term in terminals loop here, but how do I save the original value? 
 
     # If the node is an AND gate output, solve and return the output
     elif circuit[node][0] == "AND":
@@ -498,6 +494,7 @@ def main():
     print(circuit)
 
     # keep an initial (unassigned any value) copy of the circuit for an easy reset
+    # The above statement is wrong, but I need these references to the object to maintain the structure of the original code
     newCircuit = circuit
     faultyCircuit = copy.deepcopy( circuit )
     newFaultyCircuit = faultyCircuit
@@ -609,8 +606,8 @@ def main():
             continue
 
 
-        circuit = basic_sim( circuit, None, False )
-        faultCircuit = basic_sim( faultyCircuit, faults, True )
+        circuit = basic_sim( circuit, None )
+        faultCircuit = basic_sim( faultyCircuit, faults )
         print("\n *** Finished simulation - resulting circuit: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
