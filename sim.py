@@ -1,12 +1,22 @@
 from __future__ import print_function
 import os
 
+# Using these naming conventions: https://visualgit.readthedocs.io/en/latest/pages/naming_convention.html
+# I won't retroactively apply them to the provided code though. 
+
 # Function List:
 # 1. netRead: read the benchmark file and build circuit netlist
 # 2. gateCalc: function that will work on the logic of each gate
 # 3. inputRead: function that will update the circuit dictionary made in netRead to hold the line values
-# 4. basic_sim: the actual simulation
-# 5. main: The main function
+# 4. read_faults: A function that reads information about the faults and generates a list that will be used to override the good circuit operations. 
+# 5. basic_sim: the actual simulation
+# 6. main: The main function
+
+# Class declaration for the faults, Please refer to the comments of read_faults() for more information.
+class fault: 
+    def __init__( self, _wire, _value ): 
+        self.wire = _wire
+        self.value = _value 
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Neatly prints the Circuit Dictionary:
@@ -294,6 +304,30 @@ def gateCalc(circuit, node):
     # Error detection... should not be able to get at this point
     return circuit[node][0]
 
+# Author: Peter
+# Function purpose:
+#	Note: When I say list in this case, I'm referring to the programming data structure, not the colloquial use of list.
+#		Also, dictionary is referring to the python dictionary, not a dictionary we look up words in. 
+#	This function is meant to read in information about the faults, then produce a list that will have the necessary information
+#	we need during the circuit simulation to override the good circuit. 
+#	Each member of this list will have these data members:
+#	fault.wire = a string should correspond to the key for each circuit node in the circuit dictionary that is used in the 
+#		circuit simulation code.
+#	fault.value = whatever value this fault will be stuck at. 
+#	The class declaration will be at the top of this file. 
+
+# Parameters: 
+# 1.  faultsInfo
+#	A text file that lists the faults that will be present in the circuit simulation
+#	Note: There's an assumption that the faults in this list will be present in the associated benchmark file
+#	i.e. I'm not going to bother doing any input sanitation.  
+
+# Returns: faults, a list of the faults 
+
+
+def read_faults( faultList ):
+    
+    return faults 
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: Updating the circuit dictionary with the input line, and also resetting the gates and output lines
