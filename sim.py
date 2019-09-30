@@ -156,6 +156,7 @@ def netRead(netName):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: calculates the output value for each logic gate
+# if faults == None, then we're running the non-faulty circuit
 def gateCalc(circuit, node, faults):
     
     # terminal will contain all the input wires of this logic gate (node)
@@ -304,6 +305,8 @@ def gateCalc(circuit, node, faults):
                 return circuit
 
         # check how many 1's we counted
+
+# 	!!!!!!!!!! PRETTY SURE THERE'S A BUG HERE  !!!!!!!!!!!!!
         if count % 2 == 1:  # if more than one 1, we know it's going to be 0.
             circuit[node][3] = '1'
         else:  # Otherwise, the output is equal to how many 1's there are
@@ -413,11 +416,14 @@ def inputRead(circuit, line):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: the actual simulation #
-def basic_sim(circuit):
+def basic_sim( circuit, faults, isRunningFaults ):
     # QUEUE and DEQUEUE
     # Creating a queue, using a list, containing all of the gates in the circuit
     queue = list(circuit["GATES"][1])
     i = 1
+
+    if ( isRunningFaults ):
+        print( "\nRunning the faulty circuit..." )
 
     while True:
         i -= 1
@@ -440,7 +446,10 @@ def basic_sim(circuit):
 
         if term_has_value:
             circuit[curr][2] = True
-            circuit = gateCalc(circuit, curr)
+            if ( isRunningFaults ): 
+                circuit = gateCalc( circuit, curr, faults )
+            else:
+                circuit = gateCalc( circuit, curr, None )
 
             # ERROR Detection if LOGIC does not exist
             if isinstance(circuit, str):
@@ -456,7 +465,6 @@ def basic_sim(circuit):
         else:
             # If the terminals have not been accessed yet, append the current node at the end of the queue
             queue.append(curr)
-
     return circuit
 
 
@@ -494,6 +502,8 @@ def main():
 
     # keep an initial (unassigned any value) copy of the circuit for an easy reset
     newCircuit = circuit
+    faultyCircuit = copy.deepcopy( circuit )
+    newFaultyCircuit = faultyCircuit
 
     # Select input file, default is input.txt
     while True:
@@ -509,6 +519,26 @@ def main():
                 print("File does not exist. \n")
             else:
                 break
+
+    # Select the faults file
+    while True:
+        faultsName = "faults.txt"
+        print("\n Read fault file: use " + inputName + "?" + " Enter to accept or type filename: ")
+        userInput = input()
+        if userInput == "":
+
+            break
+        else:
+            faultsName = os.path.join(script_dir, userInput)
+            if not os.path.isfile( faultsName ):
+                print("File does not exist. \n")
+            else:
+                break
+    
+    print( "\nReading the faults file..." )
+    faultsFile = open( faultsName, "r" )
+    faults = read_faults( faultsFile )
+
 
     # Select output file, default is output.txt
     while True:
@@ -527,11 +557,13 @@ def main():
     print("\n *** Simulating the" + inputName + " file and will output in" + outputName + "*** \n")
     inputFile = open(inputName, "r")
     outputFile = open(outputName, "w")
+    faultyOutputFile = open( "faulty_" + outputName, "w" )
 
     # Runs the simulator for each line of the input file
     for line in inputFile:
         # Initializing output variable each input line
         output = ""
+        faultyOutput = ""
 
         # Do nothing else if empty lines, ...
         if (line == "\n"):
@@ -543,6 +575,7 @@ def main():
         # Removing the the newlines at the end and then output it to the txt file
         line = line.replace("\n", "")
         outputFile.write(line)
+        faultyOutputFile.write( line )
 
         # Removing spaces
         line = line.replace(" ", "")
@@ -553,6 +586,7 @@ def main():
         print(circuit)
         print("\n ---> Now ready to simulate INPUT = " + line)
         circuit = inputRead(circuit, line)
+        faultyCircuit = inputRead( faultyCircuit, line ) 
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
         print(circuit)
@@ -561,20 +595,25 @@ def main():
         if circuit == -1:
             print("INPUT ERROR: INSUFFICIENT BITS")
             outputFile.write(" -> INPUT ERROR: INSUFFICIENT BITS" + "\n")
+            faultyOutputFile.write( " -> INPUT ERROR: INSUFFICIENT BITS" + "\n" )
             # After each input line is finished, reset the netList
             circuit = newCircuit
+            faultyCircuit = newFaultyCircuit
             print("...move on to next input\n")
             continue
         elif circuit == -2:
             print("INPUT ERROR: INVALID INPUT VALUE/S")
             outputFile.write(" -> INPUT ERROR: INVALID INPUT VALUE/S" + "\n")
+            faultyOutputFile.write( " -> INPUT ERROR: INVALID INPUT VALUE/S" + "\n" )
             # After each input line is finished, reset the netList
             circuit = newCircuit
+            faultyCircuit = newFaultyCircuit
             print("...move on to next input\n")
             continue
 
 
-        circuit = basic_sim(circuit)
+        circuit = basic_sim( circuit, None, False )
+        faultCircuit = basic_sim( faultyCircuit, faults, True )
         print("\n *** Finished simulation - resulting circuit: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
@@ -584,12 +623,15 @@ def main():
         for y in circuit["OUTPUTS"][1]:
             if not circuit[y][2]:
                 output = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
+                faultyOutput = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                 break
             output = str(circuit[y][3]) + output
+            faultyOutput = str(circuit[y][3]) + faultyOutput
 
         print("\n *** Summary of simulation: ")
         print(line + " -> " + output + " written into output file. \n")
-        outputFile.write(" -> " + output + "\n")
+        outputFile.write( " -> " + output + "\n" )
+        faultyOutputFile.write( " -> " + faultyOutput + "\n" )
 
         # After each input line is finished, reset the circuit
         print("\n *** Now resetting circuit back to unknowns... \n")
@@ -598,6 +640,8 @@ def main():
             if (key[0:5]=="wire_"):
                 circuit[key][2] = False
                 circuit[key][3] = 'U'
+                faultyCircuit[key][2] = False
+                faultyCircuit[key][3] = 'U'
 
         print("\n circuit after resetting: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
@@ -607,6 +651,7 @@ def main():
         print("\n*******************\n")
         
     outputFile.close
+    faultyOutputFile.close
     #exit()
 
 
