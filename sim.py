@@ -416,13 +416,13 @@ def inputRead(circuit, line):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: the actual simulation #
-def basic_sim( circuit, faults, isRunningFaults ):
+def basic_sim( circuit, faults ):
     # QUEUE and DEQUEUE
     # Creating a queue, using a list, containing all of the gates in the circuit
     queue = list(circuit["GATES"][1])
     i = 1
 
-    if ( isRunningFaults ):
+    if ( faults != None ):
         print( "\nRunning the faulty circuit..." )
 
     while True:
@@ -446,10 +446,7 @@ def basic_sim( circuit, faults, isRunningFaults ):
 
         if term_has_value:
             circuit[curr][2] = True
-            if ( isRunningFaults ): 
-                circuit = gateCalc( circuit, curr, faults )
-            else:
-                circuit = gateCalc( circuit, curr, None )
+            circuit = gateCalc( circuit, curr, faults )
 
             # ERROR Detection if LOGIC does not exist
             if isinstance(circuit, str):
