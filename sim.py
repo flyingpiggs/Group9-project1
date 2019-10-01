@@ -160,7 +160,17 @@ def netRead(netName):
 def gateCalc(circuit, node, fault):
     
     # terminal will contain all the input wires of this logic gate (node)
-    terminals = list(circuit[node][1])  
+    terminals = list(circuit[node][1])
+
+    storedValue = None
+    if ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] != None )
+        storedValue = circuit[node][3]
+        circuit[node][3] = fault[ "value" ]
+    # Next condition being true means the fault is at an output wire
+    elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ) 
+        circuit[node][3] = fault[ "value" ]
+        return circuit  
+        
 
     # If the node is an Inverter gate output, solve and return the output
     if circuit[node][0] == "NOT":
@@ -172,6 +182,7 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = "U"
         else:  # Should not be able to come here
             return -1
+        circuit[node][3] = storedValue
         return circuit
 
 # I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
@@ -204,6 +215,7 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
+        circuit[node][3] = storedValue
         return circuit
 
     # If the node is a NAND gate output, solve and return the output
@@ -226,6 +238,7 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
+        circuit[node][3] = storedValue
         return circuit
 
     # If the node is an OR gate output, solve and return the output
@@ -246,6 +259,7 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
+        circuit[node][3] = storedValue
         return circuit
 
     # If the node is an NOR gate output, solve and return the output
@@ -265,6 +279,7 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
+        circuit[node][3] = storedValue
         return circuit
 
     # If the node is an XOR gate output, solve and return the output
@@ -285,6 +300,7 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = '1'
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
+        circuit[node][3] = storedValue
         return circuit
 
     # If the node is an XNOR gate output, solve and return the output
@@ -300,13 +316,12 @@ def gateCalc(circuit, node, fault):
                 circuit[node][3] = "U"
                 return circuit
 
-        # check how many 1's we counted
-
-# 	!!!!!!!!!! PRETTY SURE THERE'S A BUG HERE  !!!!!!!!!!!!!
-        if count % 2 == 1:  # if more than one 1, we know it's going to be 0.
-            circuit[node][3] = '1'
-        else:  # Otherwise, the output is equal to how many 1's there are
+        #checks parity
+        if count % 2 == 1:  
             circuit[node][3] = '0'
+        else: 
+            circuit[node][3] = '1'
+        circuit[node][3] = storedValue
         return circuit
 
     # Error detection... should not be able to get at this point
@@ -353,7 +368,7 @@ def read_faults( faultInfo ):
         else:
             fault["terminal"] = None
         fault[ "value" ] = value
-        fault[ "wire" ] = "wire_"+splitString[0]      
+        fault[ "wire" ] = "wire_" + splitString[0]      
         fault.append = fault
 #	End of the loop
      	
@@ -391,15 +406,23 @@ def inputRead(circuit, line):
 def basic_sim( circuit, fault ):
     # QUEUE and DEQUEUE
     # Creating a queue, using a list, containing all of the gates in the circuit
+
+    
     queue = list(circuit["GATES"][1])
     i = 1
-    faultName = fault[ "wire" ]
-    if ( fault[ "terminal" ] ):
-        faultName = faultName + "-IN-" + fault[ "terminal" ]
-    faultName = faultName + "-SA-" + fault[ "value" ]  
 
+    # Still remains to be seen if I actually need this next variable
+    #ogInput = "" 
     if ( fault != None ):
+        faultName = fault[ "wire" ]
+        if ( fault[ "terminal" ] ):
+            faultName = faultName + "-IN-" + fault[ "terminal" ]
+        faultName = faultName + "-SA-" + fault[ "value" ]  
         print( "\nRunning the faulty circuit with " + faultName )
+        # Forces any of the primary input wires to be a certain value if it's applicable
+        if ( circuit[ fault[ "wire" ] ][0] == "INPUT" ):
+            #ogInput = circuit[ fault[ "wire" ] ][3]
+            circuit[ fault[ "wire" ] ][3] = fault[ "value" ] 
 
     while True:
         i -= 1
@@ -438,6 +461,9 @@ def basic_sim( circuit, fault ):
         else:
             # If the terminals have not been accessed yet, append the current node at the end of the queue
             queue.append(curr)
+
+    # Do I need this?
+    #circuit[ fault[ "wire" ] ][3] = ogInput
     return circuit
 
 
@@ -549,7 +575,6 @@ def main():
         # Removing the the newlines at the end and then output it to the txt file
         line = line.replace("\n", "")
         outputFile.write(line)
-        faultyOutputFile.write( line )
 
         # Removing spaces
         line = line.replace(" ", "")
@@ -559,8 +584,7 @@ def main():
         # printCkt(circuit)
         print(circuit)
         print("\n ---> Now ready to simulate INPUT = " + line)
-        circuit = inputRead(circuit, line)
-        faultyCircuit = inputRead( faultyCircuit, line ) 
+        circuit = inputRead(circuit, line) 
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
         print(circuit)
@@ -606,6 +630,7 @@ def main():
 
         print( "\nNow doing simulation of circuits with faults...\n" )
         for fault in faults:
+            faultyCircuit = inputRead( faultyCircuit, line )
             faultyOutput = ""
             faultName = fault[ "wire" ]
 
