@@ -159,7 +159,7 @@ def faults(circuit, outFile):
         outFile.write(i[1] + "-SA-0" + "\n")
         outFile.write(i[1] + "-SA-1" + "\n")
         faults_number = faults_number + 2
-    print(i)
+    #print(i)
     for i in circuit["GATES"][1]:
         q=i.split("_")
         outFile.write(q[1] + "-SA-0" + "\n")
