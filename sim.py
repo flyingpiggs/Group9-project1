@@ -169,9 +169,9 @@ def gateCalc(circuit, node, fault):
         print( fault )
 
     if ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] != None ):
-        storedValue = circuit[node][3]
+        storedValue = circuit[ fault[ "terminal" ] ][3]
         print( "storedValue: " + storedValue )
-        circuit[node][3] = fault[ "value" ]
+        circuit[ fault[ "terminal" ] ][3] = fault[ "value" ]
     # Next condition being true means the fault is at an output wire
     elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ):
         circuit[node][3] = fault[ "value" ]
@@ -189,8 +189,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = "U"
         else:  # Should not be able to come here
             return -1
-        if ( fault != None and node == fault[ "wire" ] ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[terminals[0]][3] = storedValue
         return circuit
 
 # I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
@@ -223,8 +223,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
-        if ( fault != None and node == fault[ "wire" ] ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # If the node is a NAND gate output, solve and return the output
@@ -247,8 +247,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
-        if ( fault != None ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # If the node is an OR gate output, solve and return the output
@@ -269,8 +269,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
-        if ( fault != None ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # If the node is an NOR gate output, solve and return the output
@@ -290,8 +290,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
-        if ( fault != None ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # If the node is an XOR gate output, solve and return the output
@@ -312,8 +312,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = '1'
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
-        if ( fault != None ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # If the node is an XNOR gate output, solve and return the output
@@ -334,8 +334,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = '0'
         else: 
             circuit[node][3] = '1'
-        if ( fault != None ):
-            circuit[node][3] = storedValue
+        if ( storedValue ):
+            circuit[fault[ "terminal" ]][3] = storedValue
         return circuit
 
     # Error detection... should not be able to get at this point
@@ -678,7 +678,7 @@ def main():
             faultyOutputFile.write( line + " -> " + faultyOutput + "\n" )
             print(line + " -> " + faultyOutput + " written into faulty output file. \n")
             if ( faultyOutput != output ):
-                faultyOutputFile.write( faultName + " detected!" )
+                faultyOutputFile.write( faultName + " detected!\n" )
                 detectedFaults[ faultName ] = True
             for key in circuit:
                 if (key[0:5]=="wire_"):
