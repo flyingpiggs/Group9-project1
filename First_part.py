@@ -168,6 +168,8 @@ def faults(circuit, outFile):
 
         for j in circuit[i][1]:
             j=j.split("_")
+            if ( j[1] == i[1] ):
+                continue
             outFile.write(i[1] + "-IN-" + j[1] + "-SA-0" + "\n")
             outFile.write(i[1] + "-IN-" + j[1] + "-SA-1" + "\n")
             faults_number = faults_number + 2

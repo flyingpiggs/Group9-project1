@@ -164,13 +164,13 @@ def gateCalc(circuit, node, fault):
 
     storedValue = None
 
-    print( "node: " + node )
-    if ( fault ):
-        print( fault )
+    #print( "node: " + node )
+    #if ( fault ):
+    #    print( fault )
 
     if ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] != None ):
         storedValue = circuit[ fault[ "terminal" ] ][3]
-        print( "storedValue: " + storedValue )
+        #print( "storedValue: " + storedValue )
         circuit[ fault[ "terminal" ] ][3] = fault[ "value" ]
     # Next condition being true means the fault is at an output wire
     elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ):
@@ -191,18 +191,7 @@ def gateCalc(circuit, node, fault):
             return -1
         if ( storedValue ):
             circuit[terminals[0]][3] = storedValue
-        return circuit
-
-# I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
-# to access the correct index of ["value"] to block the signal from the good circuit and replace it with the fault.
-# I need to make sure I save the signal from the good circuit though because I won't know whether or not there are fan-outs
-# within the scope of this code so I have to save the value so that I can restore it after the faulty output is calculated.
-
-# Things are easier when the fault is at an output wire since I know that the index for ["value"] must be 0
-# and I can just overwrite the value without having to worry about fan-outs since it'll be handled by whatever I do 
-# to deal with the issue mentioned in the previous comment block.
-
-# I should probably start a for term in terminals loop here, but how do I save the original value? 
+        return circuit 
 
     # If the node is an AND gate output, solve and return the output
     elif circuit[node][0] == "AND":
@@ -484,8 +473,8 @@ def basic_sim( circuit, fault ):
             print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][0] + " for:")
             for term in circuit[curr][1]:
                 print(term + " = " + circuit[term][3])
-            print("\nPress Enter to Continue...")
-            input()
+            #print("\nPress Enter to Continue...")
+            #input()
 
         else:
             # If the terminals have not been accessed yet, append the current node at the end of the queue
@@ -504,6 +493,7 @@ def main():
 
     # Used for file access
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+    displayFile = open( "display.txt", "w" )
 
     print("Circuit Simulator:")
 
@@ -552,7 +542,7 @@ def main():
     # Select the faults file
     while True:
         faultsName = "faults.txt"
-        print("\n Read fault file: use " + inputName + "?" + " Enter to accept or type filename: ")
+        print("\n Read fault file: use " + faultsName + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
 
