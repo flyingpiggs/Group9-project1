@@ -359,6 +359,16 @@ def read_faults( faultInfo ):
 
     faults = [] 
     for info in faultInfo:
+
+        info.replace( " ", "" )
+        if ( info == "\n" )
+            continue
+
+        info.replace( "\n", "" )
+
+        if ( info[0] == "#" )
+            continue
+
         splitString = info.split("-")
         value = splitString[ len( splitString ) - 1 ]
         fault = {}
