@@ -209,8 +209,8 @@ def main():
 
     # Select output file, default is output.txt
     while True:
-        outputName = "output.txt"
-        print("\n Write output file: use " + outputName + "?" + " Enter to accept or type filename: ")
+        outputName = "full_faults.txt"
+        print("\n Write full faults list to: " + outputName + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
             break
