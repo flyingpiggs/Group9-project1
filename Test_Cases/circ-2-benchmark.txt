@@ -9,7 +9,7 @@ INPUT (C)
 
 OUTPUT(E)
 
-d = AND(A,B)
+D = AND(A,B)
 E = OR(d,C)
 
 
