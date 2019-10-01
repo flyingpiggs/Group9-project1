@@ -175,7 +175,7 @@ def gateCalc(circuit, node, fault):
     # Next condition being true means the fault is at an output wire
     elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ):
         circuit[node][3] = fault[ "value" ]
-        print( "In gateCalc's elif condition: " + circuit[node][3] )
+        #print( "In gateCalc's elif condition: " + circuit[node][3] )
         return circuit
         
 
@@ -418,7 +418,7 @@ def inputRead(circuit, line):
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # FUNCTION: the actual simulation #
-def basic_sim( circuit, fault ):
+def basic_sim( circuit, fault, displayFile ):
     # QUEUE and DEQUEUE
     # Creating a queue, using a list, containing all of the gates in the circuit
 
@@ -434,6 +434,7 @@ def basic_sim( circuit, fault ):
             faultName = faultName + "-IN-" + fault[ "terminal" ]
         faultName = faultName + "-SA-" + fault[ "value" ]  
         print( "\nRunning the faulty circuit with " + faultName )
+        displayFile.write( "\nRunning the faulty circuit with " + faultName + "\n\n" )
         # Forces any of the primary input wires to be a certain value if it's applicable
         if ( circuit[ fault[ "wire" ] ][0] == "INPUT" ):
             #ogInput = circuit[ fault[ "wire" ] ][3]
@@ -471,8 +472,10 @@ def basic_sim( circuit, fault ):
 #            print( "curr: " + circuit[curr][3] )
 #            print( "curr: " + circuit[curr][0] )
             print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][0] + " for:")
+            displayFile.write("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][0] + " for:\n")
             for term in circuit[curr][1]:
                 print(term + " = " + circuit[term][3])
+                displayFile.write(term + " = " + circuit[term][3] + "\n")
             #print("\nPress Enter to Continue...")
             #input()
 
@@ -493,7 +496,6 @@ def main():
 
     # Used for file access
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    displayFile = open( "display.txt", "w" )
 
     print("Circuit Simulator:")
 
@@ -574,9 +576,12 @@ def main():
     # **************************************************************************************************************** #
 
     print("\n *** Simulating the" + inputName + " file and will output in" + outputName + "*** \n")
+    print( "The faulty output will be put into the a file with the same name as the output file with faulty_ prepended to it." )
+    print( "Information regarding the circuit simulation will be put into a file with the same name as the output file with display_ prepended to it."  )
     inputFile = open(inputName, "r")
     outputFile = open(outputName, "w")
     faultyOutputFile = open( "faulty_" + outputName, "w" )
+    displayFile = open( "display_" + outputName , "w" )
     detectedFaults = {}
 
     # Runs the simulator for each line of the input file
@@ -603,6 +608,7 @@ def main():
         # printCkt(circuit)
         print(circuit)
         print("\n ---> Now ready to simulate INPUT = " + line)
+        displayFile.write("\n ---> Now ready to simulate INPUT = " + line + "\n")
         circuit = inputRead(circuit, line) 
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
@@ -629,8 +635,9 @@ def main():
             continue
 
 
-        circuit = basic_sim( circuit, None )
+        circuit = basic_sim( circuit, None, displayFile )
         print("\n *** Finished simulation of good circuit - resulting circuit: \n")
+        displayFile.write("\n *** Finished simulation of good circuit - resulting circuit: \n")
         # Uncomment the following line, for the neater display of the function and then comment out print(circuit)
         # printCkt(circuit)
         print(circuit)
@@ -645,9 +652,12 @@ def main():
 
         print("\n *** Summary of simulation of good circuit: ")
         print(line + " -> " + output + " written into output file. \n")
+        displayFile.write("\n *** Summary of simulation of good circuit: \n")
+        displayFile.write(line + " -> " + output + " written into output file. \n")
         outputFile.write( " -> " + output + "\n" )
 
         print( "\nNow doing simulation of circuits with faults...\n" )
+        displayFile.write( "\nNow doing simulation of circuits with faults...\n" )
         for fault in faults:
             faultyCircuit = inputRead( faultyCircuit, line )
             faultyOutput = ""
@@ -657,7 +667,7 @@ def main():
                 faultName = faultName + "-IN-" + fault[ "terminal" ]
             faultName = faultName + "-SA-" + fault[ "value" ]
 
-            faultyCircuit = basic_sim( circuit, fault )
+            faultyCircuit = basic_sim( circuit, fault, displayFile )
             for y in circuit["OUTPUTS"][1]:
                 if not circuit[y][2]:
                     faultyOutput = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
@@ -667,9 +677,12 @@ def main():
 
             faultyOutputFile.write( line + " -> " + faultyOutput + "\n" )
             print(line + " -> " + faultyOutput + " written into faulty output file. \n")
+            displayFile.write(line + " -> " + faultyOutput + " written into faulty output file. \n")
             if ( faultyOutput != output ):
-                faultyOutputFile.write( faultName + " detected!\n" )
+                faultyOutputFile.write( faultName + " detected!\n\n" )
+                displayFile.write( faultName + " detected for the input: " + line + "\n" )
                 detectedFaults[ faultName ] = True
+            displayFile.write( "\n" )
             for key in circuit:
                 if (key[0:5]=="wire_"):
                     faultyCircuit[key][2] = False
@@ -696,6 +709,9 @@ def main():
     print( "Number of detected faults: " + str( len( detectedFaults ) ) )
     print( "Number of faults in the fault list file: " + str( len( faults ) ) )
     print( "Fault coverage: %.2f" % faultCoverage ) 
+    displayFile.write( "Number of detected faults: " + str( len( detectedFaults ) ) )
+    displayFile.write( "Number of faults in the fault list file: " + str( len( faults ) ) )
+    displayFile.write( "Fault coverage: %.2f" % faultCoverage ) 
     outputFile.close
     faultyOutputFile.close
     #exit()
