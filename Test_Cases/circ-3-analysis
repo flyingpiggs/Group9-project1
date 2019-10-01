@@ -1,0 +1,94 @@
+circuit:
+
+        ______                          _____
+A------|      |      E                 |      |    H
+       |  NOR |------------------------|  AND |------
+B------|______|                    ----|_____ |
+         _____                     |      
+        |     |     F     ______   |G
+C------ | NOT |----------|      |  |
+        |_____|        __|  AND |---
+                       | |______|
+D----------------------
+
+
+
+
+INPUT T.V --          OUTPUT *Detected faults*
+0000    -   -   -   -   D-SA-1
+                        G-SA-1
+                        G-IN-S-SA-1
+                        E-SA-1
+                        E-IN-G-SA-1
+                        H-SA-1
+
+
+0001    -   -   -   -   D-SA-0
+                        C-SA-1
+                        G-SA-0
+                        H-SA-0
+                        E-SA-0
+                        H-IN-G-SA-0
+                        H-IN-E-SA-0
+                        F-SA-0
+                        F-IN-C-SA-1
+
+
+0011                    C-SA-0
+                        G-SA-1
+                        G-IN-C-SA-0
+                        H-SA-1
+                        H-IN-G-SA-1
+                        F-SA-1
+                        F-IN-C-SA-0
+
+
+
+0100
+                        H-SA-1
+
+
+0101
+                        B-SA-0
+                        E-SA-1
+                        E-IN-B-SA-0
+                        H-SA-1
+                        H-IN-E-SA-1                     
+
+0110
+                        H-SA-1
+
+0111
+                        H-SA-1
+
+1000
+    
+                        H-SA-1
+
+1001
+                        A-SA-0
+                        E-SA-1
+                        E-IN-A-SA-0
+                        H-SA-1
+                        H-IN-E-SA-1
+                
+1010
+                        H-SA-1
+
+1011
+                        H-SA-1
+
+1100
+                        H-SA-1
+
+1101
+
+                        E-SA-1
+                        H-SA-1
+                        H-IN-E-SA-1
+
+1110
+                        H-SA-1
+    
+1111                    
+                        H-SA-1                        

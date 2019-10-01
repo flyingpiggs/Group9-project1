@@ -1,0 +1,17 @@
+#circuit.bench
+#4 inputs
+#1 output
+#4 gates
+
+
+INPUT(A)
+INPUT(B)
+INPUT(C)
+INPUT(D)
+
+OUTPUT(H)
+
+E = NOR(A,B)
+F = NOT(C)
+G = AND(F,D)
+H = AND(E,G)
