@@ -163,13 +163,20 @@ def gateCalc(circuit, node, fault):
     terminals = list(circuit[node][1])
 
     storedValue = None
-    if ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] != None )
+
+    print( "node: " + node )
+    if ( fault ):
+        print( fault )
+
+    if ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] != None ):
         storedValue = circuit[node][3]
+        print( "storedValue: " + storedValue )
         circuit[node][3] = fault[ "value" ]
     # Next condition being true means the fault is at an output wire
-    elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ) 
+    elif ( fault != None and node == fault[ "wire" ] and fault[ "terminal" ] == None ):
         circuit[node][3] = fault[ "value" ]
-        return circuit  
+        print( "In gateCalc's elif condition: " + circuit[node][3] )
+        return circuit
         
 
     # If the node is an Inverter gate output, solve and return the output
@@ -182,7 +189,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = "U"
         else:  # Should not be able to come here
             return -1
-        circuit[node][3] = storedValue
+        if ( fault != None and node == fault[ "wire" ] ):
+            circuit[node][3] = storedValue
         return circuit
 
 # I need to iterate through the faults[wireName]["terminals"] and find which index it's at so that I can use the index
@@ -215,7 +223,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
-        circuit[node][3] = storedValue
+        if ( fault != None and node == fault[ "wire" ] ):
+            circuit[node][3] = storedValue
         return circuit
 
     # If the node is a NAND gate output, solve and return the output
@@ -238,7 +247,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
-        circuit[node][3] = storedValue
+        if ( fault != None ):
+            circuit[node][3] = storedValue
         return circuit
 
     # If the node is an OR gate output, solve and return the output
@@ -259,7 +269,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '0':
                 circuit[node][3] = "U"
-        circuit[node][3] = storedValue
+        if ( fault != None ):
+            circuit[node][3] = storedValue
         return circuit
 
     # If the node is an NOR gate output, solve and return the output
@@ -279,7 +290,8 @@ def gateCalc(circuit, node, fault):
         if unknownTerm:
             if circuit[node][3] == '1':
                 circuit[node][3] = "U"
-        circuit[node][3] = storedValue
+        if ( fault != None ):
+            circuit[node][3] = storedValue
         return circuit
 
     # If the node is an XOR gate output, solve and return the output
@@ -300,7 +312,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = '1'
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
-        circuit[node][3] = storedValue
+        if ( fault != None ):
+            circuit[node][3] = storedValue
         return circuit
 
     # If the node is an XNOR gate output, solve and return the output
@@ -321,7 +334,8 @@ def gateCalc(circuit, node, fault):
             circuit[node][3] = '0'
         else: 
             circuit[node][3] = '1'
-        circuit[node][3] = storedValue
+        if ( fault != None ):
+            circuit[node][3] = storedValue
         return circuit
 
     # Error detection... should not be able to get at this point
@@ -361,16 +375,18 @@ def read_faults( faultInfo ):
     for info in faultInfo:
 
         info.replace( " ", "" )
-        if ( info == "\n" )
+        info.replace( "\t", "" )
+        if ( info == "\n" ):
             continue
 
         info.replace( "\n", "" )
 
-        if ( info[0] == "#" )
+        if ( info[0] == "#" ):
             continue
 
         splitString = info.split("-")
-        value = splitString[ len( splitString ) - 1 ]
+        # There's a random newline character showing up that I'm dealing with in a very ad hoc fashion...
+        value = splitString[ len( splitString ) - 1 ].replace( "\n", "" )
         fault = {}
         if ( "-IN-" in info ):
             fault["terminal"] = "wire_" + splitString[2] 
@@ -379,7 +395,7 @@ def read_faults( faultInfo ):
             fault["terminal"] = None
         fault[ "value" ] = value
         fault[ "wire" ] = "wire_" + splitString[0]      
-        fault.append = fault
+        faults.append( fault ) 
 #	End of the loop
      	
     return faults 
@@ -462,6 +478,9 @@ def basic_sim( circuit, fault ):
                 print(circuit)
                 return circuit
 
+#            print( "curr: " + curr )
+#            print( "curr: " + circuit[curr][3] )
+#            print( "curr: " + circuit[curr][0] )
             print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][0] + " for:")
             for term in circuit[curr][1]:
                 print(term + " = " + circuit[term][3])
@@ -684,8 +703,8 @@ def main():
         print("\n*******************\n")
     
     faultCoverage = len( detectedFaults) / len( faults )
-    print( "Number of detected faults: " + len( detectedFaults ) )
-    print( "Number of faults in the fault list file: " + len( faults ) )
+    print( "Number of detected faults: " + str( len( detectedFaults ) ) )
+    print( "Number of faults in the fault list file: " + str( len( faults ) ) )
     print( "Fault coverage: %.2f" % faultCoverage ) 
     outputFile.close
     faultyOutputFile.close
